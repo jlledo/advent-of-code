@@ -35,17 +35,17 @@ mod tests {
 
     #[test]
     fn single_digit() {
-        assert_eq!(77, calibration_value_sum("7"));
+        assert_eq!(77, calibration_value("7"));
     }
 
     #[test]
     fn single_digit_at_start() {
-        assert_eq!(77, calibration_value_sum("7a"));
+        assert_eq!(77, calibration_value("7a"));
     }
 
     #[test]
     fn single_digit_at_end() {
-        assert_eq!(77, calibration_value_sum("a7"));
+        assert_eq!(77, calibration_value("a7"));
     }
 
     #[test]
@@ -55,12 +55,12 @@ mod tests {
 
     #[test]
     fn first_digit_at_start() {
-        assert_eq!(78, calibration_value_sum("7a8b"));
+        assert_eq!(78, calibration_value("7a8b"));
     }
 
     #[test]
     fn last_digit_at_end() {
-        assert_eq!(78, calibration_value_sum("a7b8"));
+        assert_eq!(78, calibration_value("a7b8"));
     }
 
     #[test]
