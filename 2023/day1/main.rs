@@ -32,40 +32,18 @@ fn find_number(mut chars: impl Iterator<Item = char>) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
-    #[test]
-    fn single_digit() {
-        assert_eq!(77, calibration_value("7"));
-    }
+    #[test_case(77, "7"; "single digit")]
+    #[test_case(77, "7a"; "single digit at the start")]
+    #[test_case(77, "a7"; "single digit at the end")]
+    #[test_case(78, "7a8b"; "first digit at the start")]
+    #[test_case(78, "a7b8"; "last digit at the end")]
+    #[test_case(78, "a78b"; "both digits surrounded")]
+    #[test_case(79, "7a8b9c"; "more than two digits")]
 
-    #[test]
-    fn single_digit_at_start() {
-        assert_eq!(77, calibration_value("7a"));
-    }
-
-    #[test]
-    fn single_digit_at_end() {
-        assert_eq!(77, calibration_value("a7"));
-    }
-
-    #[test]
-    fn more_than_two_digits() {
-        assert_eq!(59, calibration_value("bib5asj2dfb9"))
-    }
-
-    #[test]
-    fn first_digit_at_start() {
-        assert_eq!(78, calibration_value("7a8b"));
-    }
-
-    #[test]
-    fn last_digit_at_end() {
-        assert_eq!(78, calibration_value("a7b8"));
-    }
-
-    #[test]
-    fn both_digits_surrounded() {
-        assert_eq!(78, calibration_value("a78b"));
+    fn calibration_value_tests(expected: u32, input: &str) {
+        assert_eq!(expected, calibration_value(input));
     }
 
     #[test]
