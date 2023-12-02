@@ -11,6 +11,7 @@ path = "day1/main.rs"
 
 [dependencies]
 color-eyre = "0.6"
+regex = "1.10"
 
 [dev-dependencies]
 test-case = "3.3"
