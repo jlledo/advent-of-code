@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use color_eyre::eyre::Result;
 use regex::Regex;
 
@@ -11,7 +12,10 @@ fn main() -> Result<()> {
     println!("Part 1: {part_1_total}");
 
     let part_2_total: u32 = input.lines().map(calibration_value_part_2).sum();
-    println!("Part 2: {part_2_total}");
+    println!("Part 2 (Regex): {part_2_total}");
+
+    let part_2_ac_total: u32 = input.lines().map(calibration_value_part_2_ac).sum();
+    println!("Part 2 (Aho-Corasick): {part_2_ac_total}");
 
     Ok(())
 }
@@ -65,6 +69,22 @@ fn parse(string: &str) -> Option<u32> {
     }
 }
 
+fn calibration_value_part_2_ac(string: &str) -> u32 {
+    let number_strings = &[
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "1", "2", "3", "4",
+        "5", "6", "7", "8", "9",
+    ];
+    let number_values: [u32; 18] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    let ac = AhoCorasick::new(number_strings).unwrap();
+    let matches: Vec<u32> = ac
+        .find_overlapping_iter(string)
+        .map(|m| number_values[m.pattern().as_usize()])
+        .collect();
+
+    (matches.first().unwrap() * 10) + matches.last().unwrap()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,5 +112,20 @@ mod tests {
     #[test_case(76, "7pqrstsixteen"; "invalid word")]
     fn calibration_value_part_2_tests(expected: u32, input: &str) {
         assert_eq!(expected, calibration_value_part_2(input));
+    }
+
+    #[test_case(38, "pqr3stu8vwx"; "two digits surrounded")]
+    #[test_case(15, "a1b2c3d4e5f"; "more than two digits")]
+    #[test_case(77, "treb7uchet"; "single surrounded digit")]
+    #[test_case(77, "7"; "single naked character")]
+    #[test_case(29, "two1nine"; "two words")]
+    #[test_case(83, "eightwothree"; "more than two words")]
+    #[test_case(13, "abcone2threexyz"; "surrounded words")]
+    #[test_case(24, "xtwone3four"; "overlapping first word")]
+    #[test_case(42, "4nineeightseven2"; "two external digits with words")]
+    #[test_case(14, "zoneight234"; "word and digit")]
+    #[test_case(76, "7pqrstsixteen"; "invalid word")]
+    fn calibration_value_part_2_ac_tests(expected: u32, input: &str) {
+        assert_eq!(expected, calibration_value_part_2_ac(input));
     }
 }

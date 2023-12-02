@@ -10,8 +10,9 @@ name = "day1"
 path = "day1/main.rs"
 
 [dependencies]
-color-eyre = "0.6"
-regex = "1.10"
+aho-corasick = "1.1.2"
+color-eyre = "0.6.2"
+regex = "1.10.2"
 
 [dev-dependencies]
-test-case = "3.3"
+test-case = "3.3.1"
