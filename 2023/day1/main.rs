@@ -6,14 +6,10 @@ fn main() -> Result<()> {
         .expect("first argument should be the input file");
     let input = std::fs::read_to_string(input_file)?;
 
-    let total: u32 = calibration_value_sum(&input);
+    let total: u32 = input.lines().map(calibration_value).sum();
     println!("Part 1: {}", total);
 
     Ok(())
-}
-
-fn calibration_value_sum(string: &str) -> u32 {
-    string.lines().map(calibration_value).sum()
 }
 
 fn calibration_value(string: &str) -> u32 {
@@ -34,24 +30,12 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case(77, "7"; "single digit")]
-    #[test_case(77, "7a"; "single digit at the start")]
-    #[test_case(77, "a7"; "single digit at the end")]
-    #[test_case(78, "7a8b"; "first digit at the start")]
-    #[test_case(78, "a7b8"; "last digit at the end")]
-    #[test_case(78, "a78b"; "both digits surrounded")]
-    #[test_case(79, "7a8b9c"; "more than two digits")]
+    #[test_case(38, "pqr3stu8vwx"; "two digits surrounded")]
+    #[test_case(15, "a1b2c3d4e5f"; "more than two digits")]
+    #[test_case(77, "treb7uchet"; "single surrounded digit")]
+    #[test_case(77, "7"; "single naked character")]
 
     fn calibration_value_tests(expected: u32, input: &str) {
         assert_eq!(expected, calibration_value(input));
-    }
-
-    #[test]
-    fn multiple_lines() {
-        let input = "1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet";
-        assert_eq!(142, calibration_value_sum(input));
     }
 }
