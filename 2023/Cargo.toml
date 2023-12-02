@@ -5,10 +5,6 @@ version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[[bin]]
-name = "day1"
-path = "day1/main.rs"
-
 [dependencies]
 aho-corasick = "1.1.2"
 color-eyre = "0.6.2"
@@ -16,3 +12,11 @@ regex = "1.10.2"
 
 [dev-dependencies]
 test-case = "3.3.1"
+
+[[bin]]
+name = "day1"
+path = "day1/main.rs"
+
+[[bin]]
+name = "day2"
+path = "day2/main.rs"
