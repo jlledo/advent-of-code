@@ -6,31 +6,47 @@ fn main() -> color_eyre::eyre::Result<()> {
         .expect("first argument should be the input file");
     let input = std::fs::read_to_string(input_file)?;
 
-    let sum = possible_game_ids_sum(&input);
-    println!("Sum of possible game IDs: {sum}");
+    let games: Vec<Game> = input.lines().map(|line| line.parse().unwrap()).collect();
+    let possible_game_ids_sum: u32 = games
+        .iter()
+        .filter(|game| {
+            game.is_possible_with(Set {
+                red: 12,
+                green: 13,
+                blue: 14,
+            })
+        })
+        .map(|game| game.id)
+        .sum();
+    println!("Sum of possible game IDs: {possible_game_ids_sum}");
+
+    let minimum_set_power_sum: u32 = games.iter().map(|game| game.minimum_set().power()).sum();
+    println!("Sum of the power of minimum sets: {minimum_set_power_sum}");
 
     Ok(())
-}
-
-fn possible_game_ids_sum(input: &str) -> u32 {
-    input
-        .lines()
-        .map(|line| line.parse::<Game>().unwrap())
-        .filter(game_is_possible)
-        .map(|g| g.id)
-        .sum()
-}
-
-fn game_is_possible(game: &Game) -> bool {
-    game.subsets
-        .iter()
-        .all(|s| s.red <= 12 && s.green <= 13 && s.blue <= 14)
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Game {
     pub id: u32,
     pub subsets: Vec<Set>,
+}
+
+impl Game {
+    fn is_possible_with(&self, set: Set) -> bool {
+        self.subsets.iter().all(|subset| set.is_superset(subset))
+    }
+
+    fn minimum_set(&self) -> Set {
+        self.subsets
+            .iter()
+            .fold(Set::default(), |mut minimum_set, set| {
+                minimum_set.red = std::cmp::max(minimum_set.red, set.red);
+                minimum_set.green = std::cmp::max(minimum_set.green, set.green);
+                minimum_set.blue = std::cmp::max(minimum_set.blue, set.blue);
+                minimum_set
+            })
+    }
 }
 
 impl FromStr for Game {
@@ -56,11 +72,21 @@ impl FromStr for Game {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 struct Set {
     pub red: u32,
     pub green: u32,
     pub blue: u32,
+}
+
+impl Set {
+    fn is_superset(&self, other: &Set) -> bool {
+        self.red >= other.red && self.green >= other.green && self.blue >= other.blue
+    }
+
+    fn power(&self) -> u32 {
+        self.red * self.green * self.blue
+    }
 }
 
 impl FromStr for Set {
@@ -111,16 +137,5 @@ mod tests {
             ],
         };
         assert_eq!(game, string.parse().unwrap());
-    }
-
-    #[test]
-    fn possible_game_ids_sum_test() {
-        let input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
-Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
-Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
-Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
-Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
-
-        assert_eq!(8, possible_game_ids_sum(input));
     }
 }
