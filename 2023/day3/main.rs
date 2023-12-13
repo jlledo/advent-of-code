@@ -4,24 +4,35 @@ fn main() -> color_eyre::eyre::Result<()> {
         .expect("first argument should be the input file");
     let input = std::fs::read_to_string(input_file)?;
 
-    let part_numbers_sum = all_part_numbers(&input).into_iter().sum::<u32>();
+    let parts = parts(&input);
+    let part_numbers_sum: u32 = parts.iter().flat_map(|part| &part.numbers).sum();
     println!("Sum of part numbers: {part_numbers_sum}");
+
+    let gear_ratios_sum: u64 = parts
+        .iter()
+        .filter_map(|part| part.try_into().ok())
+        .map(|gear: Gear| gear.ratio())
+        .sum();
+    println!("Sum of gear ratios: {gear_ratios_sum}");
 
     Ok(())
 }
 
-fn all_part_numbers<'a>(input: &'a str) -> Vec<u32> {
-    let mut all_part_numbers = vec![];
+fn parts<'a>(input: &'a str) -> Vec<Part> {
+    let mut parts = vec![];
     let lines: Vec<&'a str> = input.lines().collect();
     for (row, line) in lines.iter().enumerate() {
         for (column, c) in line.as_bytes().iter().enumerate() {
             if is_part(*c) {
-                all_part_numbers.append(&mut part_numbers(&lines, row, column));
+                parts.push(Part {
+                    character: *c as char,
+                    numbers: part_numbers(&lines, row, column),
+                });
             }
         }
     }
 
-    all_part_numbers
+    parts
 }
 
 fn is_part(c: u8) -> bool {
@@ -103,8 +114,48 @@ fn scan_number<'a>(lines: &Vec<&'a str>, row: usize, column: usize) -> Option<u3
     line[left..=right].parse().ok()
 }
 
+struct Part {
+    pub character: char,
+    pub numbers: Vec<u32>,
+}
+
+struct Gear {
+    numbers: (u32, u32),
+}
+
+impl Gear {
+    fn ratio(&self) -> u64 {
+        self.numbers.0 as u64 * self.numbers.1 as u64
+    }
+}
+
+struct Error;
+
+impl TryFrom<Part> for Gear {
+    type Error = Error;
+
+    fn try_from(value: Part) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl TryFrom<&Part> for Gear {
+    type Error = Error;
+
+    fn try_from(value: &Part) -> Result<Self, Self::Error> {
+        if value.character == '*' && value.numbers.len() == 2 {
+            Ok(Self {
+                numbers: (value.numbers[0], value.numbers[1]),
+            })
+        } else {
+            Err(Error)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use test_case::test_case;
 
     #[test_case(0, "...\n.#.\n..."; "part with no numbers returns zero")]
@@ -123,7 +174,33 @@ mod tests {
     fn part_numbers_sum(expected: u32, input: &str) {
         assert_eq!(
             expected,
-            super::all_part_numbers(input).into_iter().sum::<u32>()
+            parts(input)
+                .into_iter()
+                .flat_map(|part| part.numbers)
+                .sum::<u32>()
+        );
+    }
+
+    #[test]
+    fn gear_ratios_sum() {
+        let input = "467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..";
+
+        assert_eq!(
+            467835,
+            parts(input)
+                .into_iter()
+                .filter_map(|part| part.try_into().ok())
+                .map(|gear: Gear| gear.ratio())
+                .sum::<u64>()
         );
     }
 }
